@@ -41,6 +41,9 @@ class MainActivity : Activity() {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main)
+
+
+        // crea stanza e ci associa un giocatore
         findViewById<Button>(R.id.button).setOnClickListener {
             Log.i("idk", AWSMobileClient.getInstance().tokens.idToken.tokenString)
             val options: RestOptions = RestOptions.builder()
@@ -49,7 +52,6 @@ class MainActivity : Activity() {
                 .build()
 
             val gameroom: GameRoom = GameRoom.builder().build()
-            //gameroom.players (Player.builder().name("alberto").score(10).build())
             Amplify.API.mutate(
                 ModelMutation.create(gameroom),
                 { response ->
@@ -80,7 +82,7 @@ class MainActivity : Activity() {
 
 
 
-
+        // aggiorna punteggio di "alberto" che sarebbe nel nostro caso "noi stessi"
         findViewById<Button>(R.id.changescore).setOnClickListener {
             var old = players.stream().filter{ p-> p.name.toLowerCase(Locale.ROOT).indexOf("alberto") != -1}.findFirst().get()
             var alberto = Player.builder()
@@ -98,7 +100,7 @@ class MainActivity : Activity() {
         }
 
 
-
+        // ottieni i giocatori e una volta ottenuti, ascoltare le loro modifiche
         runOnUiThread{
             Amplify.API.query(
                 ModelQuery.list(Player::class.java),
@@ -128,7 +130,7 @@ class MainActivity : Activity() {
 
 
 
-
+        // ottieni i giocatori
         findViewById<Button>(R.id.showplayers).setOnClickListener{
             Amplify.API.query(
                 ModelQuery.list(Player::class.java),
@@ -169,6 +171,13 @@ class MainActivity : Activity() {
         }
         updateUI();
     }
+    // mostra i giocatori
+    private fun updateOutput(){
+        runOnUiThread{
+            findViewById<TextView>(R.id.output).text = players.joinToString { p -> "nome : ${p.name}, score :${p.score}\n" }
+        }
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == AWSCognitoAuthPlugin.WEB_UI_SIGN_IN_ACTIVITY_CODE) {
@@ -234,9 +243,5 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun updateOutput(){
-        runOnUiThread{
-            findViewById<TextView>(R.id.output).text = players.joinToString { p -> "nome : ${p.name}, score :${p.score}\n" }
-        }
-    }
+
 }
