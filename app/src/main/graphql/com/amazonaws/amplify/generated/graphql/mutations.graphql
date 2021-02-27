@@ -1,0 +1,133 @@
+# this is an auto generated file. This will be overwritten
+mutation CreateGameRoom(
+  $input: CreateGameRoomInput!
+  $condition: ModelGameRoomConditionInput
+) {
+  createGameRoom(input: $input, condition: $condition) {
+    id
+    players {
+      items {
+        lastinteraction
+        name
+        score
+        id
+        gameid
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+    createdAt
+    updatedAt
+  }
+}
+mutation UpdateGameRoom(
+  $input: UpdateGameRoomInput!
+  $condition: ModelGameRoomConditionInput
+) {
+  updateGameRoom(input: $input, condition: $condition) {
+    id
+    players {
+      items {
+        lastinteraction
+        name
+        score
+        id
+        gameid
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+    createdAt
+    updatedAt
+  }
+}
+mutation DeleteGameRoom(
+  $input: DeleteGameRoomInput!
+  $condition: ModelGameRoomConditionInput
+) {
+  deleteGameRoom(input: $input, condition: $condition) {
+    id
+    players {
+      items {
+        lastinteraction
+        name
+        score
+        id
+        gameid
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+    createdAt
+    updatedAt
+  }
+}
+mutation CreatePlayer(
+  $input: CreatePlayerInput!
+  $condition: ModelPlayerConditionInput
+) {
+  createPlayer(input: $input, condition: $condition) {
+    lastinteraction
+    name
+    score
+    id
+    gameid
+    gameroom {
+      id
+      players {
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+    createdAt
+    updatedAt
+  }
+}
+mutation UpdatePlayer(
+  $input: UpdatePlayerInput!
+  $condition: ModelPlayerConditionInput
+) {
+  updatePlayer(input: $input, condition: $condition) {
+    lastinteraction
+    name
+    score
+    id
+    gameid
+    gameroom {
+      id
+      players {
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+    createdAt
+    updatedAt
+  }
+}
+mutation DeletePlayer(
+  $input: DeletePlayerInput!
+  $condition: ModelPlayerConditionInput
+) {
+  deletePlayer(input: $input, condition: $condition) {
+    lastinteraction
+    name
+    score
+    id
+    gameid
+    gameroom {
+      id
+      players {
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+    createdAt
+    updatedAt
+  }
+}

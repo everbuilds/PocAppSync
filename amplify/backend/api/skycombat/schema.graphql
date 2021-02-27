@@ -1,0 +1,13 @@
+type GameRoom @model{
+  id: ID!
+  players: [Player] @connection(keyName: "byGameRoom", fields: ["id"])
+}
+
+type Player @model @key(name: "byGameRoom", fields: ["gameid"]) {
+  lastinteraction: AWSTimestamp
+  name: String!
+  score: Int
+  id: ID!
+  gameid: ID!
+  gameroom: GameRoom @connection(fields: ["gameid"])
+}

@@ -1,0 +1,115 @@
+# this is an auto generated file. This will be overwritten
+subscription OnCreateGameRoom {
+  onCreateGameRoom {
+    id
+    players {
+      items {
+        lastinteraction
+        name
+        score
+        id
+        gameid
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+    createdAt
+    updatedAt
+  }
+}
+subscription OnUpdateGameRoom {
+  onUpdateGameRoom {
+    id
+    players {
+      items {
+        lastinteraction
+        name
+        score
+        id
+        gameid
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+    createdAt
+    updatedAt
+  }
+}
+subscription OnDeleteGameRoom {
+  onDeleteGameRoom {
+    id
+    players {
+      items {
+        lastinteraction
+        name
+        score
+        id
+        gameid
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+    createdAt
+    updatedAt
+  }
+}
+subscription OnCreatePlayer {
+  onCreatePlayer {
+    lastinteraction
+    name
+    score
+    id
+    gameid
+    gameroom {
+      id
+      players {
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+    createdAt
+    updatedAt
+  }
+}
+subscription OnUpdatePlayer {
+  onUpdatePlayer {
+    lastinteraction
+    name
+    score
+    id
+    gameid
+    gameroom {
+      id
+      players {
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+    createdAt
+    updatedAt
+  }
+}
+subscription OnDeletePlayer {
+  onDeletePlayer {
+    lastinteraction
+    name
+    score
+    id
+    gameid
+    gameroom {
+      id
+      players {
+        nextToken
+      }
+      createdAt
+      updatedAt
+    }
+    createdAt
+    updatedAt
+  }
+}
