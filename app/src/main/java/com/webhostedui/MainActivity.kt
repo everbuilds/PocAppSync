@@ -13,11 +13,15 @@ import android.view.WindowInsetsController
 import android.view.WindowManager
 import android.view.animation.AlphaAnimation
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.amazonaws.mobile.client.AWSMobileClient
 import com.amplifyframework.api.ApiException
+import com.amplifyframework.api.ApiOperation
 import com.amplifyframework.api.graphql.model.ModelMutation
+import com.amplifyframework.api.graphql.model.ModelQuery
+import com.amplifyframework.api.graphql.model.ModelSubscription
 import com.amplifyframework.api.rest.RestOptions
 import com.amplifyframework.auth.cognito.AWSCognitoAuthPlugin
 import com.amplifyframework.core.Amplify
@@ -25,9 +29,12 @@ import com.amplifyframework.core.model.temporal.Temporal.Timestamp.*
 import com.amplifyframework.datastore.generated.model.GameRoom
 import com.amplifyframework.datastore.generated.model.Player
 import java.time.temporal.Temporal
+import java.util.*
+import kotlin.collections.ArrayList
 
 
 class MainActivity : Activity() {
+    var players : ArrayList<Player> = ArrayList<Player>();
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -65,6 +72,74 @@ class MainActivity : Activity() {
                     )
                 },
                 { error: ApiException? -> Log.e("MyAmplifyApp", "Create failed", error) }
+            )
+        }
+
+
+
+
+
+
+
+        findViewById<Button>(R.id.changescore).setOnClickListener {
+            var old = players.stream().filter{ p-> p.name.toLowerCase(Locale.ROOT).indexOf("alberto") != -1}.findFirst().get()
+            var alberto = Player.builder()
+                .name(old.name)
+                .id(old.id)
+                .gameroom(old.gameroom)
+                .score((Math.random() * 10000).toInt())
+                .lastinteraction(now())
+                .build()
+            Amplify.API.mutate(
+                ModelMutation.update(alberto),
+                { response -> Log.i("MyAmplifyApp", "Todo with id: " + response.data.id) },
+                { error -> Log.e("MyAmplifyApp", "Create failed", error) }
+            )
+        }
+
+
+
+        runOnUiThread{
+            Amplify.API.query(
+                ModelQuery.list(Player::class.java),
+                { response ->
+                    players = ArrayList(response.data.items.toList())
+                    val subscription: ApiOperation<*>? = Amplify.API.subscribe(
+                        ModelSubscription.onUpdate(Player::class.java),
+                        { Log.i("ApiQuickStart", "Subscription established") },
+                        { onUpdate ->
+                            players.removeIf { p -> p.id == onUpdate.data.id }
+                            players.add(onUpdate.data)
+                            updateOutput()
+                        },
+                        { onFailure -> Log.e("ApiQuickStart", "Subscription failed", onFailure) },
+                        { Log.i("ApiQuickStart", "Subscription completed") }
+                    )
+                },
+                { error -> Log.e("MyAmplifyApp", "Query failure", error) }
+            )
+
+        }
+
+
+
+
+
+
+
+
+
+        findViewById<Button>(R.id.showplayers).setOnClickListener{
+            Amplify.API.query(
+                ModelQuery.list(Player::class.java),
+                { response ->
+                    val output =
+                        response.data.items.joinToString { p -> "nome : ${p.name}, score :${p.score}, ultima interazione: ${p.lastinteraction}\n" }
+                    runOnUiThread{
+                        findViewById<TextView>(R.id.output).text = output
+                    }
+                },
+                { error -> Log.e("MyAmplifyApp", "Query failure", error) }
             )
         }
         findViewById<Button>(R.id.play).setOnClickListener {
@@ -132,7 +207,6 @@ class MainActivity : Activity() {
         )
 
     }
-
     private fun toast(text: String, size: Int = Toast.LENGTH_SHORT){
         this.runOnUiThread{
             val toast = Toast.makeText(this, text, size)
@@ -157,6 +231,12 @@ class MainActivity : Activity() {
                 findViewById<Button>(R.id.registrazione).visibility = View.VISIBLE
 
             }
+        }
+    }
+
+    private fun updateOutput(){
+        runOnUiThread{
+            findViewById<TextView>(R.id.output).text = players.joinToString { p -> "nome : ${p.name}, score :${p.score}\n" }
         }
     }
 }
