@@ -24,8 +24,10 @@ import com.amplifyframework.core.Amplify
 import com.amplifyframework.core.model.temporal.Temporal.Timestamp.*
 import com.amplifyframework.datastore.generated.model.GameRoom
 import com.amplifyframework.datastore.generated.model.Player
+import com.android.volley.AuthFailureError
 import com.android.volley.Request
 import com.android.volley.Response
+import com.android.volley.VolleyError
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import org.json.JSONObject
@@ -43,29 +45,27 @@ class MainActivity : Activity() {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main)
 
-        // crea stanza e ci associa un giocatore (richiesta HTTP con amplify)
+        // crea stanza e ci associa un giocatore
         findViewById<Button>(R.id.requestAPI).setOnClickListener {
             Log.i("idk", AWSMobileClient.getInstance().tokens.idToken.tokenString)
-            /*val options: RestOptions = RestOptions.builder()
-                .addHeader("Authorization", AWSMobileClient.getInstance().tokens.idToken.tokenString)
-                .addPath("https://rjgw85764l.execute-api.us-east-2.amazonaws.com/V1/")
-                .addBody(Amplify.Auth.currentUser.username.toByteArray())
-                .build()*/
 
             val url = "https://rjgw85764l.execute-api.us-east-2.amazonaws.com/V1/"
             val queue  = Volley.newRequestQueue(this)
-            val jsonObjectRequest = JsonObjectRequest(
-                Request.Method.GET, url, JSONObject(Amplify.Auth.currentUser.username),
-                Response.Listener { response ->
-                    val id = "Response: %s".format(response.toString())
+            val jsonObjectRequest = JsonObjectRequest(Request.Method.GET, url, null,
+                { response ->
+                    val id = "Response: ".format(response.toString())
                     Log.i("IDrequestAPI", "${id}")
                 },
-                Response.ErrorListener { error ->
+                { error ->
                     Log.i("IDrequestAPI", "Errore cnnessione Json")
                 }
             )
-
-
+            fun getHeaders():Map<String, String> {
+               val params = HashMap<String, String>()
+               params.put("Name", Amplify.Auth.currentUser.username)
+                params.put("Authorization", AWSMobileClient.getInstance().tokens.idToken.tokenString)
+               return params
+            }
             queue.add(jsonObjectRequest)
 
 
