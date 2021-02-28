@@ -49,21 +49,22 @@ class MainActivity : Activity() {
         findViewById<Button>(R.id.requestAPI).setOnClickListener {
             Log.i("idk", AWSMobileClient.getInstance().tokens.idToken.tokenString)
 
-            val url = "https://rjgw85764l.execute-api.us-east-2.amazonaws.com/V1/"
+            val url = "https://rjgw85764l.execute-api.us-east-2.amazonaws.com/V1/AddPendency"
             val queue  = Volley.newRequestQueue(this)
             val jsonObjectRequest = object:JsonObjectRequest(Request.Method.GET, url, null,
                 { response ->
-                    val id = "Response: ".format(response.toString())
-                    Log.i("IDrequestAPI", "${id}")
+                    if(response.get("name").equals(Amplify.Auth.currentUser.username)){
+                        startActivity(Intent(this, WaitingRoom::class.java))
+                    }
                 },
                 { error ->
-                    Log.i("IDrequestAPI", "Errore cnnessione Json")
+                    Log.e("errore", error.toString())
+                    toast("Errore richiesta partita")
                 }
             ) {
                 override fun getHeaders():Map<String, String> {
                     val params = HashMap<String, String>()
-                    params.put("Name", Amplify.Auth.currentUser.username)
-                    params.put("Authorization", AWSMobileClient.getInstance().tokens.idToken.tokenString)
+                    params["Authorization"] = AWSMobileClient.getInstance().tokens.idToken.tokenString
                     return params
                 }
             }
@@ -71,7 +72,7 @@ class MainActivity : Activity() {
             queue.add(jsonObjectRequest)
 
 
-            val gameroom: GameRoom = GameRoom.builder().build()
+            /*val gameroom: GameRoom = GameRoom.builder().build()
             Amplify.API.mutate(
                 ModelMutation.create(gameroom),
                 { response ->
@@ -94,7 +95,7 @@ class MainActivity : Activity() {
                     )
                 },
                 { error: ApiException? -> Log.e("MyAmplifyApp", "Create failed", error) }
-            )
+            )*/
         }
 
 
@@ -119,38 +120,6 @@ class MainActivity : Activity() {
                 { error -> Log.e("MyAmplifyApp", "Create failed", error) }
             )
         }
-
-
-        // ottieni i giocatori e una volta ottenuti, ascoltare le loro modifiche
-        runOnUiThread{
-            Amplify.API.query(
-                ModelQuery.list(Player::class.java),
-                { response ->
-                    players = ArrayList(response.data.items.toList())
-                    val subscription: ApiOperation<*>? = Amplify.API.subscribe(
-                        ModelSubscription.onUpdate(Player::class.java),                         //_______________________
-                        { Log.i("ApiQuickStart", "Subscription established") },
-                        { onUpdate ->                                                           //----update.data() getPlayers()
-                            players.removeIf { p -> p.id == onUpdate.data.id }
-                            players.add(onUpdate.data)
-                            updateOutput()
-                        },
-                        { onFailure -> Log.e("ApiQuickStart", "Subscription failed", onFailure) },
-                        { Log.i("ApiQuickStart", "Subscription completed") }
-                    )
-                },
-                { error -> Log.e("MyAmplifyApp", "Query failure", error) }
-            )
-
-        }
-
-
-
-
-
-
-
-
         // ottieni i giocatori
         findViewById<Button>(R.id.showplayers).setOnClickListener{
             Amplify.API.query(
