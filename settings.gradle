@@ -1,2 +1,3 @@
 rootProject.name = "WebHostedUI"
 include ':app'
+include ':mylibrary'

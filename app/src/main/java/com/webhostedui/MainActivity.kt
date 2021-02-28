@@ -24,6 +24,11 @@ import com.amplifyframework.core.Amplify
 import com.amplifyframework.core.model.temporal.Temporal.Timestamp.*
 import com.amplifyframework.datastore.generated.model.GameRoom
 import com.amplifyframework.datastore.generated.model.Player
+import com.android.volley.Request
+import com.android.volley.Response
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
+import org.json.JSONObject
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -41,11 +46,28 @@ class MainActivity : Activity() {
         // crea stanza e ci associa un giocatore (richiesta HTTP con amplify)
         findViewById<Button>(R.id.requestAPI).setOnClickListener {
             Log.i("idk", AWSMobileClient.getInstance().tokens.idToken.tokenString)
-            val options: RestOptions = RestOptions.builder()
+            /*val options: RestOptions = RestOptions.builder()
                 .addHeader("Authorization", AWSMobileClient.getInstance().tokens.idToken.tokenString)
                 .addPath("https://rjgw85764l.execute-api.us-east-2.amazonaws.com/V1/")
                 .addBody(Amplify.Auth.currentUser.username.toByteArray())
-                .build()
+                .build()*/
+
+            val url = "https://rjgw85764l.execute-api.us-east-2.amazonaws.com/V1/"
+            val queue  = Volley.newRequestQueue(this)
+            val jsonObjectRequest = JsonObjectRequest(
+                Request.Method.GET, url, JSONObject(Amplify.Auth.currentUser.username),
+                Response.Listener { response ->
+                    val id = "Response: %s".format(response.toString())
+                    Log.i("IDrequestAPI", "${id}")
+                },
+                Response.ErrorListener { error ->
+                    Log.i("IDrequestAPI", "Errore cnnessione Json")
+                }
+            )
+
+
+            queue.add(jsonObjectRequest)
+
 
             val gameroom: GameRoom = GameRoom.builder().build()
             Amplify.API.mutate(
