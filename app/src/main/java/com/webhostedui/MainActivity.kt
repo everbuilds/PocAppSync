@@ -4,18 +4,14 @@ import android.R.attr.*
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
-import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.Window
-import android.view.WindowInsetsController
 import android.view.WindowManager
-import android.view.animation.AlphaAnimation
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import com.amazonaws.mobile.client.AWSMobileClient
 import com.amplifyframework.api.ApiException
 import com.amplifyframework.api.ApiOperation
@@ -28,7 +24,6 @@ import com.amplifyframework.core.Amplify
 import com.amplifyframework.core.model.temporal.Temporal.Timestamp.*
 import com.amplifyframework.datastore.generated.model.GameRoom
 import com.amplifyframework.datastore.generated.model.Player
-import java.time.temporal.Temporal
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -42,9 +37,8 @@ class MainActivity : Activity() {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main)
 
-
         // crea stanza e ci associa un giocatore
-        findViewById<Button>(R.id.button).setOnClickListener {
+        findViewById<Button>(R.id.requestAPI).setOnClickListener {
             Log.i("idk", AWSMobileClient.getInstance().tokens.idToken.tokenString)
             val options: RestOptions = RestOptions.builder()
                 .addHeader("Authorization", AWSMobileClient.getInstance().tokens.idToken.tokenString)
@@ -57,7 +51,7 @@ class MainActivity : Activity() {
                 { response ->
                     Log.i("MyAmplifyApp", "Added GameRoom with id: " + response.getData().getId())
                     val player = Player.builder()
-                        .name("alberto")
+                        .name(Amplify.Auth.currentUser.username)
                         .score(10)
                         .gameroom(gameroom)
                         .lastinteraction(now())
@@ -82,10 +76,11 @@ class MainActivity : Activity() {
 
 
 
-        // aggiorna punteggio di "alberto" che sarebbe nel nostro caso "noi stessi"
+        // aggiorna il proprio punteggio
         findViewById<Button>(R.id.changescore).setOnClickListener {
-            var old = players.stream().filter{ p-> p.name.toLowerCase(Locale.ROOT).indexOf("alberto") != -1}.findFirst().get()
-            var alberto = Player.builder()
+            var old = players.stream().filter{ p-> p.name.toLowerCase(Locale.ROOT).indexOf(Amplify.Auth.currentUser.username) != -1}.findFirst().get()
+            Log.i("ID","${old.name},${old.id}")
+            var player = Player.builder()
                 .name(old.name)
                 .id(old.id)
                 .gameroom(old.gameroom)
@@ -93,7 +88,7 @@ class MainActivity : Activity() {
                 .lastinteraction(now())
                 .build()
             Amplify.API.mutate(
-                ModelMutation.update(alberto),
+                ModelMutation.update(player),
                 { response -> Log.i("MyAmplifyApp", "Todo with id: " + response.data.id) },
                 { error -> Log.e("MyAmplifyApp", "Create failed", error) }
             )
@@ -136,7 +131,7 @@ class MainActivity : Activity() {
                 ModelQuery.list(Player::class.java),
                 { response ->
                     val output =
-                        response.data.items.joinToString { p -> "nome : ${p.name}, score :${p.score}, ultima interazione: ${p.lastinteraction}\n" }
+                        response.data.items.joinToString { p -> "\n\n ${p.name},  score :${p.score},  ultima interazione: ${p.lastinteraction}" }
                     runOnUiThread{
                         findViewById<TextView>(R.id.output).text = output
                     }
@@ -229,10 +224,19 @@ class MainActivity : Activity() {
                     findViewById<Button>(R.id.login).visibility = View.GONE
                     findViewById<Button>(R.id.registrazione).visibility = View.GONE
                     findViewById<Button>(R.id.logout).visibility = View.VISIBLE
+                    findViewById<Button>(R.id.play).visibility = View.VISIBLE
+                    findViewById<Button>(R.id.requestAPI).visibility = View.VISIBLE
+                    findViewById<Button>(R.id.showplayers).visibility = View.VISIBLE
+                    findViewById<Button>(R.id.changescore).visibility = View.VISIBLE
+                    findViewById<Button>(R.id.changescore).text = "Cambia score di ${Amplify.Auth.currentUser.username}"
                 } else {
                     findViewById<Button>(R.id.logout).visibility = View.GONE
                     findViewById<Button>(R.id.login).visibility = View.VISIBLE
                     findViewById<Button>(R.id.registrazione).visibility = View.VISIBLE
+                    findViewById<Button>(R.id.play).visibility = View.GONE
+                    findViewById<Button>(R.id.requestAPI).visibility = View.GONE
+                    findViewById<Button>(R.id.showplayers).visibility = View.GONE
+                    findViewById<Button>(R.id.changescore).visibility = View.GONE
                 }
             } catch (ex: Exception) {
                 findViewById<Button>(R.id.logout).visibility = View.GONE

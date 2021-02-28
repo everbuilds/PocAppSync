@@ -44,12 +44,12 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Mostra spiegazioni di gioco"
-        app:layout_constraintBottom_toTopOf="@+id/button"
+        app:layout_constraintBottom_toTopOf="@+id/requestAPI"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/button" />
+        app:layout_constraintStart_toStartOf="@+id/requestAPI" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/requestAPI"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Effettua richiesta API"
@@ -72,7 +72,7 @@
         android:id="@+id/changescore"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Cambia score di Alberto"
+        android:text="Cambia score di"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
