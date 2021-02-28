@@ -37,11 +37,11 @@ class MainActivity : Activity() {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main)
 
-        // crea stanza e ci associa un giocatore
+        // crea stanza e ci associa un giocatore (richiesta HTTP con amplify)
         findViewById<Button>(R.id.requestAPI).setOnClickListener {
             Log.i("idk", AWSMobileClient.getInstance().tokens.idToken.tokenString)
             val options: RestOptions = RestOptions.builder()
-                .addHeader("Authorization", AWSMobileClient.getInstance().tokens.idToken.tokenString)
+                .addHeader("Authorization", AWSMobileClient.getInstance().tokens.idToken.tokenString)   //usare questo header
                 .addPath("/testapi")
                 .build()
 
@@ -78,7 +78,7 @@ class MainActivity : Activity() {
 
         // aggiorna il proprio punteggio
         findViewById<Button>(R.id.changescore).setOnClickListener {
-            var old = players.stream().filter{ p-> p.name.toLowerCase(Locale.ROOT).indexOf(Amplify.Auth.currentUser.username) != -1}.findFirst().get()
+            var old = players.stream().filter{ p-> p.name.toLowerCase(Locale.ROOT).indexOf(Amplify.Auth.currentUser.username.toLowerCase()) != -1}.findFirst().get()
             Log.i("ID","${old.name},${old.id}")
             var player = Player.builder()
                 .name(old.name)
@@ -102,9 +102,9 @@ class MainActivity : Activity() {
                 { response ->
                     players = ArrayList(response.data.items.toList())
                     val subscription: ApiOperation<*>? = Amplify.API.subscribe(
-                        ModelSubscription.onUpdate(Player::class.java),
+                        ModelSubscription.onUpdate(Player::class.java),                         //_______________________
                         { Log.i("ApiQuickStart", "Subscription established") },
-                        { onUpdate ->
+                        { onUpdate ->                                                           //----update.data() getPlayers()
                             players.removeIf { p -> p.id == onUpdate.data.id }
                             players.add(onUpdate.data)
                             updateOutput()
@@ -131,7 +131,7 @@ class MainActivity : Activity() {
                 ModelQuery.list(Player::class.java),
                 { response ->
                     val output =
-                        response.data.items.joinToString { p -> "\n\n ${p.name},  score :${p.score},  ultima interazione: ${p.lastinteraction}" }
+                        response.data.items.sortedBy { p -> p.name.toLowerCase() }.joinToString { p -> "\n\n ${p.name},  score :${p.score},  ultima interazione: ${p.lastinteraction}" }
                     runOnUiThread{
                         findViewById<TextView>(R.id.output).text = output
                     }
@@ -169,7 +169,7 @@ class MainActivity : Activity() {
     // mostra i giocatori
     private fun updateOutput(){
         runOnUiThread{
-            findViewById<TextView>(R.id.output).text = players.joinToString { p -> "nome : ${p.name}, score :${p.score}\n" }
+            findViewById<TextView>(R.id.output).text = players.sortedBy { p -> p.score }.joinToString { p -> "nome : ${p.name}, score :${p.score}\n" }
         }
     }
 
