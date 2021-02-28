@@ -51,7 +51,7 @@ class MainActivity : Activity() {
 
             val url = "https://rjgw85764l.execute-api.us-east-2.amazonaws.com/V1/"
             val queue  = Volley.newRequestQueue(this)
-            val jsonObjectRequest = JsonObjectRequest(Request.Method.GET, url, null,
+            val jsonObjectRequest = object:JsonObjectRequest(Request.Method.GET, url, null,
                 { response ->
                     val id = "Response: ".format(response.toString())
                     Log.i("IDrequestAPI", "${id}")
@@ -59,13 +59,15 @@ class MainActivity : Activity() {
                 { error ->
                     Log.i("IDrequestAPI", "Errore cnnessione Json")
                 }
-            )
-            fun getHeaders():Map<String, String> {
-               val params = HashMap<String, String>()
-               params.put("Name", Amplify.Auth.currentUser.username)
-                params.put("Authorization", AWSMobileClient.getInstance().tokens.idToken.tokenString)
-               return params
+            ) {
+                override fun getHeaders():Map<String, String> {
+                    val params = HashMap<String, String>()
+                    params.put("Name", Amplify.Auth.currentUser.username)
+                    params.put("Authorization", AWSMobileClient.getInstance().tokens.idToken.tokenString)
+                    return params
+                }
             }
+
             queue.add(jsonObjectRequest)
 
 
