@@ -27,6 +27,7 @@ import com.amplifyframework.datastore.generated.model.Player
 import java.util.*
 import kotlin.collections.ArrayList
 
+//import okhttp3.OkHttp
 
 class MainActivity : Activity() {
     var players : ArrayList<Player> = ArrayList<Player>();
@@ -41,8 +42,9 @@ class MainActivity : Activity() {
         findViewById<Button>(R.id.requestAPI).setOnClickListener {
             Log.i("idk", AWSMobileClient.getInstance().tokens.idToken.tokenString)
             val options: RestOptions = RestOptions.builder()
-                .addHeader("Authorization", AWSMobileClient.getInstance().tokens.idToken.tokenString)   //usare questo header
-                .addPath("/testapi")
+                .addHeader("Authorization", AWSMobileClient.getInstance().tokens.idToken.tokenString)
+                .addPath("https://rjgw85764l.execute-api.us-east-2.amazonaws.com/V1/")
+                .addBody(Amplify.Auth.currentUser.username.toByteArray())
                 .build()
 
             val gameroom: GameRoom = GameRoom.builder().build()
