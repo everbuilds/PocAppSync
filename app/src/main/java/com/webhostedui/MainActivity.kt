@@ -24,6 +24,13 @@ import com.amplifyframework.core.Amplify
 import com.amplifyframework.core.model.temporal.Temporal.Timestamp.*
 import com.amplifyframework.datastore.generated.model.GameRoom
 import com.amplifyframework.datastore.generated.model.Player
+import com.android.volley.AuthFailureError
+import com.android.volley.Request
+import com.android.volley.Response
+import com.android.volley.VolleyError
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
+import org.json.JSONObject
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -38,16 +45,36 @@ class MainActivity : Activity() {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main)
 
-        // crea stanza e ci associa un giocatore (richiesta HTTP con amplify)
+        // crea stanza e ci associa un giocatore
         findViewById<Button>(R.id.requestAPI).setOnClickListener {
             Log.i("idk", AWSMobileClient.getInstance().tokens.idToken.tokenString)
-            val options: RestOptions = RestOptions.builder()
-                .addHeader("Authorization", AWSMobileClient.getInstance().tokens.idToken.tokenString)
-                .addPath("https://rjgw85764l.execute-api.us-east-2.amazonaws.com/V1/")
-                .addBody(Amplify.Auth.currentUser.username.toByteArray())
-                .build()
 
-            val gameroom: GameRoom = GameRoom.builder().build()
+            val url = "https://rjgw85764l.execute-api.us-east-2.amazonaws.com/V1/AddPendency"
+            val queue  = Volley.newRequestQueue(this)
+            val jsonObjectRequest = object:JsonObjectRequest(Request.Method.GET, url, null,
+                { response ->
+                    if(response.has("id")){
+                        var intent = Intent(this, WaitingRoom::class.java)
+                        intent.putExtra("id-player", response.getString("id"))
+                        startActivity(intent)
+                    }
+                },
+                { error ->
+                    Log.e("errore", error.toString())
+                    toast("Errore richiesta partita")
+                }
+            ) {
+                override fun getHeaders():Map<String, String> {
+                    val params = HashMap<String, String>()
+                    params["Authorization"] = AWSMobileClient.getInstance().tokens.idToken.tokenString
+                    return params
+                }
+            }
+
+            queue.add(jsonObjectRequest)
+
+
+            /*val gameroom: GameRoom = GameRoom.builder().build()
             Amplify.API.mutate(
                 ModelMutation.create(gameroom),
                 { response ->
@@ -70,7 +97,7 @@ class MainActivity : Activity() {
                     )
                 },
                 { error: ApiException? -> Log.e("MyAmplifyApp", "Create failed", error) }
-            )
+            )*/
         }
 
 
@@ -106,7 +133,8 @@ class MainActivity : Activity() {
                     val subscription: ApiOperation<*>? = Amplify.API.subscribe(
                         ModelSubscription.onUpdate(Player::class.java),                         //_______________________
                         { Log.i("ApiQuickStart", "Subscription established") },
-                        { onUpdate ->                                                           //----update.data() getPlayers()
+                        { onUpdate ->
+                            Log.i("test", onUpdate.toString())//----update.data() getPlayers()
                             players.removeIf { p -> p.id == onUpdate.data.id }
                             players.add(onUpdate.data)
                             updateOutput()
