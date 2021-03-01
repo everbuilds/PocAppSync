@@ -53,8 +53,10 @@ class MainActivity : Activity() {
             val queue  = Volley.newRequestQueue(this)
             val jsonObjectRequest = object:JsonObjectRequest(Request.Method.GET, url, null,
                 { response ->
-                    if(response.get("name").equals(Amplify.Auth.currentUser.username)){
-                        startActivity(Intent(this, WaitingRoom::class.java))
+                    if(response.has("id")){
+                        var intent = Intent(this, WaitingRoom::class.java)
+                        intent.putExtra("id-player", response.getString("id"))
+                        startActivity(intent)
                     }
                 },
                 { error ->
@@ -120,6 +122,39 @@ class MainActivity : Activity() {
                 { error -> Log.e("MyAmplifyApp", "Create failed", error) }
             )
         }
+
+
+        // ottieni i giocatori e una volta ottenuti, ascoltare le loro modifiche
+        runOnUiThread{
+            Amplify.API.query(
+                ModelQuery.list(Player::class.java),
+                { response ->
+                    players = ArrayList(response.data.items.toList())
+                    val subscription: ApiOperation<*>? = Amplify.API.subscribe(
+                        ModelSubscription.onUpdate(Player::class.java),                         //_______________________
+                        { Log.i("ApiQuickStart", "Subscription established") },
+                        { onUpdate ->
+                            Log.i("test", onUpdate.toString())//----update.data() getPlayers()
+                            players.removeIf { p -> p.id == onUpdate.data.id }
+                            players.add(onUpdate.data)
+                            updateOutput()
+                        },
+                        { onFailure -> Log.e("ApiQuickStart", "Subscription failed", onFailure) },
+                        { Log.i("ApiQuickStart", "Subscription completed") }
+                    )
+                },
+                { error -> Log.e("MyAmplifyApp", "Query failure", error) }
+            )
+
+        }
+
+
+
+
+
+
+
+
         // ottieni i giocatori
         findViewById<Button>(R.id.showplayers).setOnClickListener{
             Amplify.API.query(

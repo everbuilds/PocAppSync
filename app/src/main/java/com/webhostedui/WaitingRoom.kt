@@ -1,5 +1,6 @@
 package com.webhostedui
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -7,26 +8,34 @@ import android.widget.TextView
 import com.amplifyframework.api.ApiOperation
 import com.amplifyframework.api.graphql.model.ModelSubscription
 import com.amplifyframework.core.Amplify
+import com.amplifyframework.datastore.generated.model.GameRoom
 import com.amplifyframework.datastore.generated.model.Player
+import com.webhostedui.model.GameSession
 
 class WaitingRoom : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_waiting_room)
-        var sub: ApiOperation<*>? = null;
-        sub= Amplify.API.subscribe(
-            ModelSubscription.onCreate(Player::class.java),
-            { Log.i("ApiQuickStart", "\n\n\n\n\n\n\n\n\n\n\n\n\nSubscription established") },
-            { onCreated ->
-                Log.i("TESTTTT", onCreated.toString())
-                if(onCreated.data.name.equals(Amplify.Auth.currentUser.username, ignoreCase = true)){
-                    onCreated.data.gameroom.id
-                    Log.i("io", onCreated.data.toString())
-                    sub!!.cancel()
-                }
-                Log.i("ApiQuickStart", "\n\n\n\n\n\n\n\n\n\n\n\n\nTodo create subscription received: " + onCreated.data) },
-            { onFailure -> Log.e("ApiQuickStart", "\n\n\n\n\n\n\n\n\n\n\n\n\nSubscription failed", onFailure) },
-            { Log.i("ApiQuickStart", "\n\n\n\n\n\n\n\n\n\n\n\n\nSubscription completed") }
-        )
+        val idPlayer = intent.getStringExtra("id-player")
+        if(idPlayer != null) {
+            var sub: ApiOperation<*>? = null;
+            sub = Amplify.API.subscribe(
+                ModelSubscription.onCreate(Player::class.java),
+                { Log.i("ApiQuickStart", "Subscription established") },
+                { onCreated ->
+                    Log.i("idk", onCreated.data.toString())
+                    if(onCreated.data.id.equals(idPlayer)){
+                        Log.i("idk","È la mia partitaaaaa")
+                        GameSession.player = onCreated.data
+                        runOnUiThread{
+                            sub!!.cancel()
+                        }
+                        startActivity(Intent(this, GameRoomActivity::class.java))
+                    }
+                },
+                { onFailure -> Log.e("ApiQuickStart", "Subscription failed", onFailure) },
+                { Log.i("ApiQuickStart", "Subscription completed") }
+            )
+        }
     }
 }
